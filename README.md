@@ -3,22 +3,20 @@
 MobileSyncExplorer application written using React Native 
 
 ## To get started do the following from this directory
+
+Clone the repo
+
+Create a folder called "mobile_sdk" inside root folder and execute below command to download the android and ios sdk 
+
 ``` shell
-node ./installios.js (for iOS)
-node ./installandroid.js (for Android)
-```
-## To create the package (e.g. to run on device)
-```shell
-react-native bundle --platform ios --dev false --entry-file index.js --bundle-output iOS/main.jsbundle
-```
+yarn install (to resolve all node modules)
 
-## Make sure to run the react-native packager
-```shell
-npm start (Windows users please use "npm run-script start-windows" instead of npm start)
+node ./installios.js (for iOS SDK download)
+node ./installandroid.js (for Android SDK download)
+
+npx react-native start (to start server)
+
+npx react-native run-android (to run in android emulator)
+
 ```
 
-## To run the application on iOS
-* Open ios/MobileSyncExplorerReactNative.xcworkspace in XCode
-
-## To run the application on Android
-* Open android/ in Android Studio

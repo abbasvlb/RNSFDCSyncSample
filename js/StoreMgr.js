@@ -55,27 +55,29 @@ function syncDownContacts() {
   syncInFlight = true;
   const fieldlist = ["FirstName", "LastName", "Id", "Email"];
   const target = {
-    iOSImpl: "SFParentChildrenSyncDownTarget",
-    parent: {
-      idFieldName: "Id",
-      sobjectType: "Account",
-      modificationDateFieldName: "LastModifiedDate",
-      soupName: "Account",
-    },
-    parentFieldlist: ["Id", "Name", "Description"],
-    children: {
-      parentIdFieldName: "AccountId",
-      idFieldName: "Id",
-      sobjectType: "Contact",
-      modificationDateFieldName: "LastModifiedDate",
-      soupName: "Contact",
-      sobjectTypePlural: "Contacts",
-    },
-    childrenFieldlist: ["FirstName", "LastName", "Id", "Email", "AccountId"],
-    relationshipType: "MASTER_DETAIL",
-    parentSoqlFilter: "Name LIKE 'United Oil & Gas%' ",
-    type: "parent_children",
-    idFieldName: "Id",
+    type: "soql",
+    query: `select ${fieldlist.join(",")} from Contact`,
+    // iOSImpl: "SFParentChildrenSyncDownTarget",
+    // parent: {
+    //   idFieldName: "Id",
+    //   sobjectType: "Account",
+    //   modificationDateFieldName: "LastModifiedDate",
+    //   soupName: "Account",
+    // },
+    // parentFieldlist: ["Id", "Name", "Description"],
+    // children: {
+    //   parentIdFieldName: "AccountId",
+    //   idFieldName: "Id",
+    //   sobjectType: "Contact",
+    //   modificationDateFieldName: "LastModifiedDate",
+    //   soupName: "Contact",
+    //   sobjectTypePlural: "Contacts",
+    // },
+    // childrenFieldlist: ["FirstName", "LastName", "Id", "Email", "AccountId"],
+    // relationshipType: "MASTER_DETAIL",
+    // parentSoqlFilter: "Name LIKE 'United Oil & Gas%' ",
+    // type: "parent_children",
+    // idFieldName: "Id",
   };
   return syncDown(
     false,
@@ -115,50 +117,49 @@ function syncUpContacts() {
   syncInFlight = true;
   const fieldlist = ["FirstName", "LastName", "Id", "Email"];
 
-  // const syncObj = {
-  //   globelStore: false,
-  //   target: {
-  //     createFieldlist: fieldlist,
-  //     updateFieldlist: fieldlist,
-  //   },
-  //   name: "Contact",
-  //   mergeMode: {
-  //     mergeMode: mobilesync.MERGE_MODE.OVERWRITE,
-  //     fieldlist,
-  //   },
-  // };
+  const syncObj = {};
   // console.log(syncObj);
+  // false,
+  //   {
+  //     iOSImpl: "SFParentChildrenSyncUpTarget",
+  //     childrenCreateFieldlist: ["LastName", "AccountId"],
+  //     parentCreateFieldlist: ["Id", "Name", "Description"],
+  //     childrenUpdateFieldlist: ["LastName", "AccountId"],
+  //     parentUpdateFieldlist: ["Name", "Description"],
+  //     parent: {
+  //       idFieldName: "Id",
+  //       sobjectType: "Account",
+  //       modificationDateFieldName: "LastModifiedDate",
+  //       soupName: "Account",
+  //     },
+  //     relationshipType: "MASTER_DETAIL",
+  //     type: "rest",
+  //     modificationDateFieldName: "LastModifiedDate",
+  //     children: {
+  //       parentIdFieldName: "AccountId",
+  //       idFieldName: "Id",
+  //       sobjectType: "Contact",
+  //       modificationDateFieldName: "LastModifiedDate",
+  //       soupName: "Contact",
+  //       sobjectTypePlural: "Contacts",
+  //     },
+  //     parentUpdateFieldlist: ["Name", "Description"],
+  //     idFieldName: "Id",
+  //   },
+  //   "Account",
+  //   {
+  //     mergeMode: mobilesync.MERGE_MODE.LEAVE_IF_CHANGED,
+  //     fieldlist,
+  //   };
   return syncUp(
     false,
     {
-      iOSImpl: "SFParentChildrenSyncUpTarget",
-      childrenCreateFieldlist: ["LastName", "AccountId"],
-      parentCreateFieldlist: ["Id", "Name", "Description"],
-      childrenUpdateFieldlist: ["LastName", "AccountId"],
-      parentUpdateFieldlist: ["Name", "Description"],
-      parent: {
-        idFieldName: "Id",
-        sobjectType: "Account",
-        modificationDateFieldName: "LastModifiedDate",
-        soupName: "Account",
-      },
-      relationshipType: "MASTER_DETAIL",
-      type: "rest",
-      modificationDateFieldName: "LastModifiedDate",
-      children: {
-        parentIdFieldName: "AccountId",
-        idFieldName: "Id",
-        sobjectType: "Contact",
-        modificationDateFieldName: "LastModifiedDate",
-        soupName: "Contact",
-        sobjectTypePlural: "Contacts",
-      },
-      parentUpdateFieldlist: ["Name", "Description"],
-      idFieldName: "Id",
+      createFieldlist: fieldlist,
+      updateFieldlist: fieldlist,
     },
-    "Account",
+    "Contact",
     {
-      mergeMode: mobilesync.MERGE_MODE.LEAVE_IF_CHANGED,
+      mergeMode: mobilesync.MERGE_MODE.OVERWRITE,
       fieldlist,
     }
   ).then(() => {
@@ -169,19 +170,12 @@ function syncUpContacts() {
 }
 
 function firstTimeSyncData() {
-  return registerSoup(false, "Account", [
+  return registerSoup(false, "Contact", [
     { path: "Id", type: "string" },
-    { path: "Name", type: "string" },
+    { path: "Email", type: "string" },
+    { path: "IsActiveOne", type: "string" },
     { path: "__local__", type: "string" },
-  ])
-    .then(
-      registerSoup(false, "Contact", [
-        { path: "Id", type: "string" },
-        { path: "AccountId", type: "string" },
-        { path: "__local__", type: "string" },
-      ])
-    )
-    .then(syncDownContacts);
+  ]).then(syncDownContacts);
 }
 
 function syncData() {
@@ -195,6 +189,7 @@ function syncData() {
 }
 
 function reSyncData() {
+  // return reSyncContacts();
   return syncUpContacts().then(reSyncContacts);
 }
 
@@ -233,33 +228,46 @@ function addContact(successCallback, errorCallback) {
     __locally_deleted__: false,
     __local__: true,
   };
+  const contact = {
+    FirstName: "From",
+    LastName: "Mobile",
+    Email: "frommobile@ivy.com",
+    Id: contactId,
+    AccountId: "001N0000024s2cpIAA",
+    IsActiveOne: "yes",
+    attributes: { type: "Contact" },
+    __locally_created__: true,
+    __locally_updated__: false,
+    __locally_deleted__: false,
+    __local__: true,
+  };
   smartstore.upsertSoupEntries(
     false,
-    "Account",
-    [Account],
-    (account) => {
-      const contact = {
-        FirstName: "From",
-        LastName: "Mobile",
-        Email: "frommobile@ivy.com",
-        Id: contactId,
-        AccountId: account[0].Id,
-        attributes: { type: "Contact" },
-        __locally_created__: true,
-        __locally_updated__: false,
-        __locally_deleted__: false,
-        __local__: true,
-      };
-      smartstore.upsertSoupEntries(
-        false,
-        "Contact",
-        [contact],
-        (ActionPlan) => successCallback(ActionPlan[0]),
-        errorCallback
-      );
-    },
+    "Contact",
+    [contact],
+    (Contact) => successCallback(Contact[0]),
     errorCallback
   );
+  // smartstore.upsertSoupEntries(
+  //   false,
+  //   "Account",
+  //   [Account],
+  //   (account) => {
+  //     const contact = {
+  //       FirstName: "From",
+  //       LastName: "Mobile",
+  //       Email: "frommobile@ivy.com",
+  //       Id: contactId,
+  //       AccountId: account[0].Id,
+  //       attributes: { type: "Contact" },
+  //       __locally_created__: true,
+  //       __locally_updated__: false,
+  //       __locally_deleted__: false,
+  //       __local__: true,
+  //     };
+  //   },
+  //   errorCallback
+  // );
 }
 
 function deleteContact(contact, successCallback, errorCallback) {
